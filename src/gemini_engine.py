@@ -41,7 +41,7 @@ RESUME:
         client = get_client(api_key)
         
         response = client.chat.completions.create(
-            model="google/gemini-flash-1.5",  # Free tier model on OpenRouter
+            model="google/gemini-pro-1.5",  # Best free model for analysis
             messages=[
                 {"role": "user", "content": prompt}
             ],
@@ -82,7 +82,7 @@ RESUME:
         client = get_client(api_key)
         
         stream = client.chat.completions.create(
-            model="google/gemini-flash-1.5",
+            model="google/gemini-pro-1.5",
             messages=[
                 {"role": "user", "content": prompt}
             ],
