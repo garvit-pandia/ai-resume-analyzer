@@ -23,10 +23,11 @@ def _get_gemini_response(prompt: str, api_key: str, stream: bool = False, json_m
     genai.configure(api_key=api_key)
     
     models_to_try = [
-        'gemini-1.5-flash',
-        'gemini-1.5-flash-latest',
-        'gemini-1.5-flash-001',
-        'gemini-pro',
+        'gemini-2.0-flash',           # Latest and fastest model
+        'gemini-1.5-pro',             # Most capable for complex analysis
+        'gemini-1.5-flash',           # Fast and efficient fallback
+        'gemini-1.5-flash-8b',        # Smaller, faster variant
+        'gemini-pro',                 # Legacy fallback
     ]
     
     last_error = None
