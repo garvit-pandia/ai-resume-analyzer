@@ -23,11 +23,9 @@ def _get_gemini_response(prompt: str, api_key: str, stream: bool = False, json_m
     genai.configure(api_key=api_key)
     
     models_to_try = [
-        'gemini-2.0-flash',           # Latest and fastest model
-        'gemini-1.5-pro',             # Most capable for complex analysis
-        'gemini-1.5-flash',           # Fast and efficient fallback
-        'gemini-1.5-flash-8b',        # Smaller, faster variant
-        'gemini-pro',                 # Legacy fallback
+        'gemini-1.5-flash',           # Fast and efficient (most reliable)
+        'gemini-1.5-pro',             # More capable, slower
+        'gemini-2.0-flash-exp',       # Experimental 2.0 (may not be available)
     ]
     
     last_error = None
