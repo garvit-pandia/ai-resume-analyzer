@@ -1,107 +1,99 @@
 """
-Gemini Engine Module
-Handles interaction with Google Gemini API for resume analysis.
+Gemini Engine Module (via OpenRouter)
+Handles interaction with OpenRouter API for resume analysis.
 """
 
-import google.generativeai as genai
-from typing import Optional, Dict, Any, Generator
+from openai import OpenAI
+from typing import Dict, Any, Generator
 import json
-import time
+import os
 
-def initialize_gemini(api_key: str) -> bool:
-    """Initialize the Gemini API."""
-    try:
-        genai.configure(api_key=api_key)
-        return True
-    except Exception:
-        return False
-
-def _get_gemini_response(prompt: str, api_key: str, stream: bool = False):
-    """
-    Internal helper to call Gemini.
-    """
-    genai.configure(api_key=api_key)
-    
-    # Use the most reliable model
-    model_name = 'gemini-1.5-flash'
-    
-    generation_config = genai.types.GenerationConfig(
-        temperature=0.7,
-        max_output_tokens=4096,
+def get_client(api_key: str) -> OpenAI:
+    """Get OpenRouter client."""
+    return OpenAI(
+        base_url="https://openrouter.ai/api/v1",
+        api_key=api_key,
     )
-
-    try:
-        model = genai.GenerativeModel(model_name)
-        if stream:
-            return model.generate_content(prompt, stream=True, generation_config=generation_config), None
-        else:
-            response = model.generate_content(prompt, generation_config=generation_config)
-            if not response.parts:
-                raise ValueError("Content blocked")
-            return response, None
-    except Exception as e:
-        return None, str(e)
 
 def analyze_resume_structure(resume_text: str, jd_text: str, api_key: str) -> Dict[str, Any]:
     """
     Analyze resume vs JD and return structured JSON data.
     """
-    prompt = f"""
-    Act as a strict HR manager. Analyze the following resume against the provided job description.
-    
-    RETURN ONLY A VALID JSON OBJECT with this exact structure:
-    {{
-      "score": <integer 0-100>,
-      "good": ["<strength 1>", "<strength 2>", "<strength 3>"],
-      "bad": ["<weakness 1>", "<weakness 2>", "<weakness 3>"]
-    }}
-    
-    Critique strictly. The "bad" array must contain 3 genuine areas for improvement or nitpicks.
-    
-    JOB DESCRIPTION:
-    {jd_text}
-    
-    RESUME:
-    {resume_text}
-    """
-    
-    response, error = _get_gemini_response(prompt, api_key)
-    
-    if error:
-        return {"success": False, "error": error}
+    prompt = f"""Act as a strict HR manager. Analyze the following resume against the provided job description.
+
+RETURN ONLY A VALID JSON OBJECT with this exact structure:
+{{
+  "score": <integer 0-100>,
+  "good": ["<strength 1>", "<strength 2>", "<strength 3>"],
+  "bad": ["<weakness 1>", "<weakness 2>", "<weakness 3>"]
+}}
+
+Critique strictly. The "bad" array must contain 3 genuine areas for improvement or nitpicks.
+
+JOB DESCRIPTION:
+{jd_text}
+
+RESUME:
+{resume_text}
+"""
     
     try:
-        # Clean the response text just in case (remove markdown code blocks if present)
-        text_response = response.text.replace("```json", "").replace("```", "").strip()
+        client = get_client(api_key)
+        
+        response = client.chat.completions.create(
+            model="google/gemini-flash-1.5",  # Free tier model on OpenRouter
+            messages=[
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.7,
+            max_tokens=4096,
+        )
+        
+        text_response = response.choices[0].message.content
+        
+        # Clean the response (remove markdown code blocks if present)
+        text_response = text_response.replace("```json", "").replace("```", "").strip()
+        
         data = json.loads(text_response)
         return {"success": True, "data": data}
+        
+    except json.JSONDecodeError as e:
+        return {"success": False, "error": f"Failed to parse AI response as JSON: {str(e)}"}
     except Exception as e:
-        return {"success": False, "error": f"Failed to parse AI response: {str(e)}"}
+        return {"success": False, "error": str(e)}
 
 def stream_summary(resume_text: str, jd_text: str, api_key: str) -> Generator[str, None, None]:
     """
     Stream a 'Vibes' summary of the candidate.
     """
-    prompt = f"""
-    Read the resume and job description below.
-    Write a direct, engaging "Vibes" summary of this candidate for the role (approx 100 words).
-    Address the user directly as "You".
-    Be informal but professional. Capture the essence of their fit.
-    
-    JOB DESCRIPTION:
-    {jd_text}
-    
-    RESUME:
-    {resume_text}
-    """
-    
-    response_stream, error = _get_gemini_response(prompt, api_key, stream=True)
-    
-    if error:
-        yield f"Error generating summary: {error}"
-        return
+    prompt = f"""Read the resume and job description below.
+Write a direct, engaging "Vibes" summary of this candidate for the role (approx 100 words).
+Address the user directly as "You".
+Be informal but professional. Capture the essence of their fit.
 
-    for chunk in response_stream:
-        if chunk.text:
-            yield chunk.text
+JOB DESCRIPTION:
+{jd_text}
 
+RESUME:
+{resume_text}
+"""
+    
+    try:
+        client = get_client(api_key)
+        
+        stream = client.chat.completions.create(
+            model="google/gemini-flash-1.5",
+            messages=[
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.7,
+            max_tokens=1024,
+            stream=True,
+        )
+        
+        for chunk in stream:
+            if chunk.choices[0].delta.content:
+                yield chunk.choices[0].delta.content
+                
+    except Exception as e:
+        yield f"Error generating summary: {str(e)}"
