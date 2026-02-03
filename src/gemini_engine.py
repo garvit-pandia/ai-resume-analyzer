@@ -22,6 +22,10 @@ def get_client(api_key: str) -> OpenAI:
     return OpenAI(
         base_url="https://openrouter.ai/api/v1",
         api_key=api_key,
+        default_headers={
+            "HTTP-Referer": "https://ai-resume-analyzer.streamlit.app",
+            "X-Title": "AI Resume Analyzer"
+        }
     )
 
 def extract_json_from_text(text: str) -> Dict[str, Any]:
@@ -85,10 +89,6 @@ RESUME:
                 ],
                 temperature=0.7,
                 max_tokens=4096,
-                headers={
-                    "HTTP-Referer": "https://ai-resume-analyzer.streamlit.app",
-                    "X-Title": "AI Resume Analyzer"
-                },
             )
             
             text_response = response.choices[0].message.content
@@ -141,10 +141,6 @@ RESUME:
                 temperature=0.7,
                 max_tokens=1024,
                 stream=True,
-                headers={
-                    "HTTP-Referer": "https://ai-resume-analyzer.streamlit.app",
-                    "X-Title": "AI Resume Analyzer"
-                },
             )
             
             first_chunk_received = False
