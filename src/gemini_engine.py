@@ -16,43 +16,31 @@ def initialize_gemini(api_key: str) -> bool:
     except Exception:
         return False
 
-def _get_gemini_response(prompt: str, api_key: str, stream: bool = False, json_mode: bool = False):
+def _get_gemini_response(prompt: str, api_key: str, stream: bool = False):
     """
-    Internal helper to call Gemini with fallback models.
+    Internal helper to call Gemini.
     """
     genai.configure(api_key=api_key)
     
-    models_to_try = [
-        'gemini-1.5-flash',           # Fast and efficient (most reliable)
-        'gemini-1.5-pro',             # More capable, slower
-        'gemini-2.0-flash-exp',       # Experimental 2.0 (may not be available)
-    ]
-    
-    last_error = None
+    # Use the most reliable model
+    model_name = 'gemini-1.5-flash'
     
     generation_config = genai.types.GenerationConfig(
         temperature=0.7,
         max_output_tokens=4096,
     )
-    
-    if json_mode:
-        generation_config.response_mime_type = "application/json"
 
-    for model_name in models_to_try:
-        try:
-            model = genai.GenerativeModel(model_name)
-            if stream:
-                return model.generate_content(prompt, stream=True, generation_config=generation_config), None
-            else:
-                response = model.generate_content(prompt, generation_config=generation_config)
-                if not response.parts:
-                    raise ValueError("Content blocked")
-                return response, None
-        except Exception as e:
-            last_error = e
-            continue
-            
-    return None, str(last_error) if last_error else "Unknown error"
+    try:
+        model = genai.GenerativeModel(model_name)
+        if stream:
+            return model.generate_content(prompt, stream=True, generation_config=generation_config), None
+        else:
+            response = model.generate_content(prompt, generation_config=generation_config)
+            if not response.parts:
+                raise ValueError("Content blocked")
+            return response, None
+    except Exception as e:
+        return None, str(e)
 
 def analyze_resume_structure(resume_text: str, jd_text: str, api_key: str) -> Dict[str, Any]:
     """
@@ -77,7 +65,7 @@ def analyze_resume_structure(resume_text: str, jd_text: str, api_key: str) -> Di
     {resume_text}
     """
     
-    response, error = _get_gemini_response(prompt, api_key, json_mode=True)
+    response, error = _get_gemini_response(prompt, api_key)
     
     if error:
         return {"success": False, "error": error}
