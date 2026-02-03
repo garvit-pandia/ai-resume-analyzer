@@ -1,6 +1,6 @@
 """
 AI Resume Analyzer - Main Streamlit Application
-A fire-and-forget tool to analyze resumes using Google Gemini.
+A fire-and-forget tool to analyze resumes using OpenRouter API.
 """
 
 import streamlit as st
@@ -56,28 +56,10 @@ st.markdown("""
     }
     
     /* Upload area styling */
-    .upload-section {
-        background: linear-gradient(145deg, #1a1d24 0%, #0e1117 100%);
-        border: 2px dashed #6C63FF;
-        border-radius: 16px;
-        padding: 2rem;
-        text-align: center;
-        transition: all 0.3s ease;
-    }
-    
-    .upload-section:hover {
-        border-color: #8B85FF;
-        box-shadow: 0 0 30px rgba(108, 99, 255, 0.2);
-    }
-    
-    /* Results card styling */
-    .result-card {
-        background: linear-gradient(145deg, #1e222a 0%, #14171c 100%);
-        border-radius: 16px;
-        padding: 1.5rem;
-        margin: 1rem 0;
-        border: 1px solid rgba(108, 99, 255, 0.2);
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    .stTextArea textarea {
+        background-color: #1A1D24;
+        border: 1px solid #2B303B;
+        border-radius: 8px;
     }
     
     /* Score display */
@@ -121,16 +103,6 @@ st.markdown("""
         margin-bottom: 0.5rem;
     }
     
-    /* Streaming text container */
-    .stream-container {
-        font-family: 'Courier New', monospace;
-        background: #1e222a;
-        padding: 1.5rem;
-        border-radius: 8px;
-        border-left: 4px solid #6C63FF;
-        line-height: 1.6;
-    }
-    
     /* Button styling */
     .stButton > button {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -150,13 +122,22 @@ st.markdown("""
         box-shadow: 0 6px 25px rgba(102, 126, 234, 0.5);
     }
     
-    /* Text Area styling */
-    .stTextArea textarea {
-        background-color: #1A1D24;
-        border: 1px solid #2B303B;
-        border-radius: 8px;
+    /* Footer */
+    .footer {
+        text-align: center;
+        padding: 2rem;
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 0.9rem;
     }
-
+    
+    /* Error message */
+    .error-box {
+        background-color: rgba(255, 99, 71, 0.1);
+        border-left: 5px solid #ff6347;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-radius: 4px;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -196,7 +177,7 @@ def render_sidebar():
         # Footer
         st.markdown("""
         <div class="footer">
-            Made with ❤️ using Streamlit & Gemini
+            Made with ❤️ using Streamlit & OpenRouter
         </div>
         """, unsafe_allow_html=True)
 
@@ -261,15 +242,17 @@ def main():
             structure_result = analyze_resume_structure(resume_text, jd_text, api_key)
             
             if not structure_result.get("success"):
-                st.error(f"❌ Analysis Failed: {structure_result.get('error')}")
+                st.markdown(f'<div class="error-box">❌ Analysis Failed: {structure_result.get("error")}</div>', unsafe_allow_html=True)
                 return
             
             data = structure_result["data"]
+            model_used = structure_result.get("model_used", "Unknown Model")
             
             # --- DISPLAY RESULTS ---
             
             # A. Score Section
             st.markdown("### 🎯 Match Score")
+            st.caption(f"Analysis performed using: `{model_used}`")
             col_score, col_summary = st.columns([1, 2])
             
             with col_score:
