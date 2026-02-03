@@ -8,6 +8,15 @@ from typing import Dict, Any, Generator
 import json
 import os
 
+# List of free models to try in order of preference
+FREE_MODELS = [
+    "google/gemini-2.0-flash-lite-preview-02-05:free",
+    "google/gemini-2.0-pro-exp-02-05:free",
+    "google/gemini-2.0-flash-thinking-exp:free",
+    "deepseek/deepseek-r1:free",
+    "meta-llama/llama-3.2-11b-vision-instruct:free",
+]
+
 def get_client(api_key: str) -> OpenAI:
     """Get OpenRouter client."""
     return OpenAI(
@@ -37,30 +46,42 @@ RESUME:
 {resume_text}
 """
     
-    try:
-        client = get_client(api_key)
-        
-        response = client.chat.completions.create(
-            model="meta-llama/llama-3.1-8b-instruct:free",  # Free model on OpenRouter
-            messages=[
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0.7,
-            max_tokens=4096,
-        )
-        
-        text_response = response.choices[0].message.content
-        
-        # Clean the response (remove markdown code blocks if present)
-        text_response = text_response.replace("```json", "").replace("```", "").strip()
-        
-        data = json.loads(text_response)
-        return {"success": True, "data": data}
-        
-    except json.JSONDecodeError as e:
-        return {"success": False, "error": f"Failed to parse AI response as JSON: {str(e)}"}
-    except Exception as e:
-        return {"success": False, "error": str(e)}
+    client = get_client(api_key)
+    last_error = None
+
+    for model in FREE_MODELS:
+        try:
+            response = client.chat.completions.create(
+                model=model,
+                messages=[
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.7,
+                max_tokens=4096,
+                headers={
+                    "HTTP-Referer": "https://ai-resume-analyzer.streamlit.app",
+                    "X-Title": "AI Resume Analyzer"
+                },
+            )
+            
+            text_response = response.choices[0].message.content
+            
+            # Clean the response
+            text_response = text_response.replace("```json", "").replace("```", "").strip()
+            
+            # Use regex or simple search to find the start/end of JSON if extra text exists
+            if "{" in text_response:
+                text_response = text_response[text_response.find("{"):text_response.rfind("}")+1]
+
+            data = json.loads(text_response)
+            return {"success": True, "data": data}
+            
+        except Exception as e:
+            last_error = e
+            print(f"Model {model} failed: {e}")
+            continue
+    
+    return {"success": False, "error": f"All free models failed. Last error: {str(last_error)}"}
 
 def stream_summary(resume_text: str, jd_text: str, api_key: str) -> Generator[str, None, None]:
     """
@@ -78,22 +99,31 @@ RESUME:
 {resume_text}
 """
     
-    try:
-        client = get_client(api_key)
-        
-        stream = client.chat.completions.create(
-            model="meta-llama/llama-3.1-8b-instruct:free",
-            messages=[
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0.7,
-            max_tokens=1024,
-            stream=True,
-        )
-        
-        for chunk in stream:
-            if chunk.choices[0].delta.content:
-                yield chunk.choices[0].delta.content
-                
-    except Exception as e:
-        yield f"Error generating summary: {str(e)}"
+    client = get_client(api_key)
+    
+    # Try the first working model for streaming
+    for model in FREE_MODELS:
+        try:
+            stream = client.chat.completions.create(
+                model=model,
+                messages=[
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.7,
+                max_tokens=1024,
+                stream=True,
+                headers={
+                    "HTTP-Referer": "https://ai-resume-analyzer.streamlit.app",
+                    "X-Title": "AI Resume Analyzer"
+                },
+            )
+            
+            for chunk in stream:
+                if chunk.choices[0].delta.content:
+                    yield chunk.choices[0].delta.content
+            return # Exit after successful stream
+            
+        except Exception:
+            continue
+    
+    yield "Error: Could not generate summary with available free models."
