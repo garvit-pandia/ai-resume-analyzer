@@ -189,32 +189,13 @@ def render_header():
 
 
 def render_sidebar():
-    """Render the sidebar with API key input and instructions."""
+    """Render the sidebar with instructions."""
     with st.sidebar:
-        st.markdown("### ⚙️ Configuration")
-        
-        # API Key input
-        api_key = st.text_input(
-            "🔑 Google API Key",
-            type="password",
-            value=os.getenv("GOOGLE_API_KEY", ""),
-            help="Enter your Google Gemini API key. Get one at https://makersuite.google.com/app/apikey"
-        )
-        
-        if api_key and api_key != "your_api_key_here":
-            st.success("✓ API Key configured")
-        else:
-            st.warning("⚠️ Please enter your API key")
-        
-        st.markdown("---")
-        
-        # Instructions
         st.markdown("### 📋 How to Use")
         st.markdown("""
-        1. **Enter your API Key** above
-        2. **Upload your resume** (PDF format)
-        3. **Click Analyze** and wait
-        4. **Review the insights** and improve!
+        1. **Upload your resume** (PDF format)
+        2. **Click Analyze** and wait
+        3. **Review the insights** and improve!
         """)
         
         st.markdown("---")
@@ -235,79 +216,6 @@ def render_sidebar():
             Made with ❤️ using Streamlit & Gemini
         </div>
         """, unsafe_allow_html=True)
-        
-        return api_key
-
-
-def render_upload_section():
-    """Render the file upload section."""
-    st.markdown("### 📤 Upload Your Resume")
-    
-    uploaded_file = st.file_uploader(
-        "Drop your PDF resume here or click to browse",
-        type=["pdf"],
-        help="Upload a text-based PDF resume. Scanned documents are not supported."
-    )
-    
-    return uploaded_file
-
-
-def render_file_info(uploaded_file):
-    """Display information about the uploaded file."""
-    file_info = get_pdf_info(uploaded_file)
-    uploaded_file.seek(0)  # Reset file pointer after reading info
-    
-    col1, col2, col3 = st.columns(3)
-    
-    with col1:
-        st.metric("📄 File", file_info["filename"][:20] + "..." if len(file_info["filename"]) > 20 else file_info["filename"])
-    
-    with col2:
-        st.metric("📦 Size", f"{file_info['size_kb']} KB")
-    
-    with col3:
-        st.metric("📑 Pages", file_info["pages"] if file_info["valid"] else "N/A")
-
-
-def render_analysis_results(analysis: str):
-    """Render the analysis results in a beautiful format."""
-    st.markdown("---")
-    st.markdown("## 📊 Analysis Results")
-    
-    # Try to extract score from the analysis
-    score = None
-    for line in analysis.split('\n'):
-        if 'Score:' in line or '/100' in line:
-            import re
-            match = re.search(r'(\d+)\s*/\s*100', line)
-            if match:
-                score = int(match.group(1))
-                break
-    
-    # Display score prominently if found
-    if score:
-        col1, col2, col3 = st.columns([1, 2, 1])
-        with col2:
-            st.markdown(f"""
-            <div class="score-container">
-                <div style="font-size: 1rem; color: rgba(255,255,255,0.8); margin-bottom: 0.5rem;">OVERALL SCORE</div>
-                <div class="score-value">{score}<span style="font-size: 2rem;">/100</span></div>
-            </div>
-            """, unsafe_allow_html=True)
-    
-    st.markdown("---")
-    
-    # Display full analysis
-    st.markdown(analysis)
-    
-    # Download button for the analysis
-    st.markdown("---")
-    st.download_button(
-        label="📥 Download Analysis Report",
-        data=analysis,
-        file_name="resume_analysis_report.md",
-        mime="text/markdown"
-    )
 
 
 def main():
@@ -315,8 +223,14 @@ def main():
     # Render header
     render_header()
     
-    # Render sidebar and get API key
-    api_key = render_sidebar()
+    # Render sidebar
+    render_sidebar()
+    
+    # Get API key from environment or secrets
+    api_key = os.getenv("GOOGLE_API_KEY")
+    # Also check Streamlit secrets
+    if not api_key and "GOOGLE_API_KEY" in st.secrets:
+        api_key = st.secrets["GOOGLE_API_KEY"]
     
     # Main content area
     col1, col2 = st.columns([2, 1])
@@ -335,8 +249,8 @@ def main():
             
             if analyze_button:
                 # Validate API key
-                if not api_key or api_key == "your_api_key_here":
-                    st.error("❌ Please enter a valid Google API key in the sidebar.")
+                if not api_key:
+                    st.error("❌ **Configuration Error**: `GOOGLE_API_KEY` not found. Please set it in `.env` or Streamlit Secrets.")
                     return
                 
                 # Process the resume

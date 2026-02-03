@@ -76,7 +76,7 @@ def initialize_gemini(api_key: str) -> bool:
 
 def analyze_resume(resume_text: str, api_key: str) -> Dict[str, Any]:
     """
-    Analyze a resume using Google Gemini 1.5 Flash.
+    Analyze a resume using Google Gemini 1.5 Flash (with fallback to other models).
     
     Args:
         resume_text: The extracted text from the resume PDF
@@ -92,37 +92,55 @@ def analyze_resume(resume_text: str, api_key: str) -> Dict[str, Any]:
         # Initialize Gemini
         genai.configure(api_key=api_key)
         
-        # Use Gemini 1.5 Flash model
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        # List of models to try in order
+        models_to_try = [
+            'gemini-1.5-flash',
+            'gemini-1.5-flash-latest',
+            'gemini-1.5-flash-001',
+            'gemini-pro',
+        ]
         
-        # Prepare the prompt
-        prompt = RESUME_ANALYSIS_PROMPT.format(resume_text=resume_text)
+        last_error = None
         
-        # Generate response
-        response = model.generate_content(
-            prompt,
-            generation_config=genai.types.GenerationConfig(
-                temperature=0.7,
-                max_output_tokens=4096,
-            )
-        )
+        for model_name in models_to_try:
+            try:
+                # Use specific model
+                model = genai.GenerativeModel(model_name)
+                
+                # Prepare the prompt
+                prompt = RESUME_ANALYSIS_PROMPT.format(resume_text=resume_text)
+                
+                # Generate response
+                response = model.generate_content(
+                    prompt,
+                    generation_config=genai.types.GenerationConfig(
+                        temperature=0.7,
+                        max_output_tokens=4096,
+                    )
+                )
+                
+                # Check if response was blocked
+                if not response.parts:
+                    return {
+                        "success": False,
+                        "analysis": None,
+                        "error": "The analysis was blocked. Please ensure your resume contains appropriate content."
+                    }
+                
+                # If successful, return immediately
+                return {
+                    "success": True,
+                    "analysis": response.text,
+                    "error": None
+                }
+                
+            except Exception as e:
+                # Store error and continue to next model
+                last_error = e
+                continue
         
-        # Check if response was blocked
-        if not response.parts:
-            return {
-                "success": False,
-                "analysis": None,
-                "error": "The analysis was blocked. Please ensure your resume contains appropriate content."
-            }
-        
-        return {
-            "success": True,
-            "analysis": response.text,
-            "error": None
-        }
-        
-    except Exception as e:
-        error_message = str(e)
+        # If all models failed, process the last error
+        error_message = str(last_error) if last_error else "Unknown error"
         
         # Provide user-friendly error messages
         if "API_KEY" in error_message.upper() or "invalid" in error_message.lower():
@@ -143,12 +161,25 @@ def analyze_resume(resume_text: str, api_key: str) -> Dict[str, Any]:
                 "analysis": None,
                 "error": "❌ **Connection Error**\n\nUnable to reach the Gemini API. Please check your internet connection."
             }
+        elif "404" in error_message and "not found" in error_message.lower():
+             return {
+                "success": False,
+                "analysis": None,
+                "error": f"❌ **Model Error**\n\nCould not access Gemini models. Checked: {', '.join(models_to_try)}.\nError details: {error_message}"
+            }
         else:
             return {
                 "success": False,
                 "analysis": None,
                 "error": f"❌ **Analysis Failed**\n\nAn error occurred: {error_message}"
             }
+            
+    except Exception as e:
+        return {
+            "success": False,
+            "analysis": None,
+            "error": f"❌ **System Error**\n\nAn unexpected error occurred: {str(e)}"
+        }
 
 
 def validate_api_key(api_key: str) -> bool:
