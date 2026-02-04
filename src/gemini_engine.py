@@ -12,10 +12,33 @@ def initialize_gemini(api_key: str):
     """Initialize Gemini with the API Key."""
     genai.configure(api_key=api_key)
 
+import time
+
 def get_gemini_model():
     """Get the specific stable model."""
     # gemini-2.0-flash is available and efficient
     return genai.GenerativeModel('gemini-2.0-flash')
+
+def retry_on_failure(func):
+    """Decorator to retry API calls on 429 Rate Limit errors."""
+    def wrapper(*args, **kwargs):
+        max_retries = 3
+        delay = 2  # Start with 2 seconds
+        
+        for attempt in range(max_retries):
+            try:
+                return func(*args, **kwargs)
+            except Exception as e:
+                # Check for rate limit error (429)
+                if "429" in str(e) or "Resource exhausted" in str(e):
+                    if attempt < max_retries - 1:
+                        # Wait gracefully
+                        time.sleep(delay)
+                        delay *= 2  # Exponential backoff
+                        continue
+                # If not 429 or retries exhausted, re-raise
+                raise e
+    return wrapper
 
 def list_available_models(api_key: str):
     """List all available models for the provided API key."""
@@ -55,8 +78,14 @@ RESUME:
 {resume_text}
 """
         
-        # Use simple generation for JSON
-        response = model.generate_content(prompt, generation_config={"response_mime_type": "application/json"})
+        # Use retry wrapper directly or implement retry logic in place
+        
+        # 1. Analyze Structure
+        @retry_on_failure
+        def generate_json_response():
+            return model.generate_content(prompt, generation_config={"response_mime_type": "application/json"})
+            
+        response = generate_json_response()
         
         if not response.parts:
              return {"success": False, "error": "Content blocked by safety filters."}
@@ -92,8 +121,14 @@ JOB DESCRIPTION:
 RESUME:
 {resume_text}
 """
-        # Streaming call
-        response_stream = model.generate_content(prompt, stream=True)
+        # Streaming call with manual retry handling (since stream object can't simply be retried in a decorator midway)
+        # We start the stream with retry
+        
+        @retry_on_failure
+        def start_stream():
+            return model.generate_content(prompt, stream=True)
+            
+        response_stream = start_stream()
         
         for chunk in response_stream:
              if chunk.text:
