@@ -14,8 +14,8 @@ def initialize_gemini(api_key: str):
 
 def get_gemini_model():
     """Get the specific stable model."""
-    # gemini-1.5-flash is the fastest, cheapest, and most stable for this use case
-    return genai.GenerativeModel('gemini-1.5-flash')
+    # gemini-2.0-flash is available and efficient
+    return genai.GenerativeModel('gemini-2.0-flash')
 
 def list_available_models(api_key: str):
     """List all available models for the provided API key."""
@@ -67,7 +67,7 @@ RESUME:
         text_response = text_response.replace("```json", "").replace("```", "").strip()
         data = json.loads(text_response)
         
-        return {"success": True, "data": data, "model_used": "gemini-1.5-flash"}
+        return {"success": True, "data": data, "model_used": "gemini-2.0-flash"}
         
     except Exception as e:
         return {"success": False, "error": f"AI Parsing Error: {str(e)}"}
