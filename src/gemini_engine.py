@@ -13,9 +13,8 @@ import time
 MODEL_PRIORITY = [
     'gemini-2.5-flash-lite',   # 1. Lightest, fastest, best free tier
     'gemini-2.5-flash',        # 2. Balanced
-    'gemini-3-flash-preview',  # 3. Newest flash
-    'gemini-flash-latest',     # 4. Alias for latest
-    'gemini-2.5-pro',          # 5. Pro fallback
+    'gemini-flash-latest',     # 3. Alias for latest
+    'gemini-2.5-pro',          # 4. Pro fallback
 ]
 
 
