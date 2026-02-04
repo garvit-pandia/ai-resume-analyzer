@@ -16,8 +16,8 @@ import time
 
 def get_gemini_model():
     """Get the specific stable model."""
-    # gemini-2.0-flash is available and efficient
-    return genai.GenerativeModel('gemini-2.0-flash')
+    # gemini-2.5-flash - latest and fastest
+    return genai.GenerativeModel('gemini-2.5-flash')
 
 def retry_on_failure(func):
     """Decorator to retry API calls on 429 Rate Limit errors."""
@@ -96,7 +96,7 @@ RESUME:
         text_response = text_response.replace("```json", "").replace("```", "").strip()
         data = json.loads(text_response)
         
-        return {"success": True, "data": data, "model_used": "gemini-2.0-flash"}
+        return {"success": True, "data": data, "model_used": "gemini-2.5-flash"}
         
     except Exception as e:
         return {"success": False, "error": f"AI Parsing Error: {str(e)}"}
