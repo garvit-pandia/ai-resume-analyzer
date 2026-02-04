@@ -188,13 +188,13 @@ def main():
     render_sidebar()
     
     # Get API key (Google Gemini)
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key and "GEMINI_API_KEY" in st.secrets:
-        api_key = st.secrets["GEMINI_API_KEY"]
+    api_key = os.getenv("GOOGLE_API_KEY")
+    if not api_key and "GOOGLE_API_KEY" in st.secrets:
+        api_key = st.secrets["GOOGLE_API_KEY"]
     
     # Check for API key early
     if not api_key:
-        st.error("❌ **Configuration Error**: `GEMINI_API_KEY` not found. Please set it in `.env` or Streamlit Secrets.")
+        st.error("❌ **Configuration Error**: `GOOGLE_API_KEY` not found. Please set it in `.env` or Streamlit Secrets.")
         return
 
     # Layout: Dual Column for Inputs
