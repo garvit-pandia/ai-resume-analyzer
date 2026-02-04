@@ -17,6 +17,18 @@ def get_gemini_model():
     # gemini-1.5-flash is the fastest, cheapest, and most stable for this use case
     return genai.GenerativeModel('gemini-1.5-flash')
 
+def list_available_models(api_key: str):
+    """List all available models for the provided API key."""
+    try:
+        initialize_gemini(api_key)
+        models = []
+        for m in genai.list_models():
+            if 'generateContent' in m.supported_generation_methods:
+                models.append(m.name)
+        return models
+    except Exception as e:
+        return [f"Error listing models: {str(e)}"]
+
 def analyze_resume_structure(resume_text: str, jd_text: str, api_key: str) -> Dict[str, Any]:
     """
     Analyze resume vs JD and return structured JSON data using Google Gemini.

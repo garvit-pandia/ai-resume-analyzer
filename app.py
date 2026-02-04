@@ -12,7 +12,7 @@ load_dotenv()
 
 # Import custom modules
 from src.pdf_loader import extract_text_from_pdf, get_pdf_info
-from src.gemini_engine import analyze_resume_structure, stream_summary
+from src.gemini_engine import analyze_resume_structure, stream_summary, list_available_models
 
 # Page configuration
 st.set_page_config(
@@ -172,6 +172,26 @@ def render_sidebar():
         - Max file size: **10MB**
         """)
         
+        st.markdown("---")
+        
+        # Debugging: List Available Models
+        with st.expander("🛠️ Debug: Check Models"):
+            if st.button("List Available Models"):
+                # Get Key
+                api_key = os.getenv("GEMINI_API_KEY")
+                if not api_key and "GEMINI_API_KEY" in st.secrets:
+                    api_key = st.secrets["GEMINI_API_KEY"]
+                
+                if api_key:
+                    models = list_available_models(api_key)
+                    if models:
+                        st.success(f"Found {len(models)} models:")
+                        st.code("\n".join(models))
+                    else:
+                        st.error("No models found or API Error.")
+                else:
+                    st.error("Please configure API Key first.")
+
         st.markdown("---")
         
     # Footer
