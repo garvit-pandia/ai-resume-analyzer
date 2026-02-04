@@ -13,8 +13,9 @@ FREE_MODELS = [
     "google/gemini-2.0-flash-lite-preview-02-05:free",
     "google/gemini-2.0-pro-exp-02-05:free",
     "google/gemini-2.0-flash-thinking-exp:free",
+    "google/gemini-exp-1206:free",
     "deepseek/deepseek-r1:free",
-    "meta-llama/llama-3.2-11b-vision-instruct:free",
+    "qwen/qwen-2.5-72b-instruct:free",
 ]
 
 def get_client(api_key: str) -> OpenAI:
