@@ -174,12 +174,12 @@ def render_sidebar():
         
         st.markdown("---")
         
-        # Footer
-        st.markdown("""
-        <div class="footer">
-            Made with ❤️ using Streamlit & OpenRouter
-        </div>
-        """, unsafe_allow_html=True)
+    # Footer
+    st.markdown("""
+    <div class="footer">
+        Made with ❤️ using Streamlit & Google Gemini
+    </div>
+    """, unsafe_allow_html=True)
 
 
 def main():
@@ -187,14 +187,14 @@ def main():
     render_header()
     render_sidebar()
     
-    # Get API key (OpenRouter)
-    api_key = os.getenv("OPENROUTER_API_KEY")
-    if not api_key and "OPENROUTER_API_KEY" in st.secrets:
-        api_key = st.secrets["OPENROUTER_API_KEY"]
+    # Get API key (Google Gemini)
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key and "GEMINI_API_KEY" in st.secrets:
+        api_key = st.secrets["GEMINI_API_KEY"]
     
     # Check for API key early
     if not api_key:
-        st.error("❌ **Configuration Error**: `OPENROUTER_API_KEY` not found. Please set it in `.env` or Streamlit Secrets.")
+        st.error("❌ **Configuration Error**: `GEMINI_API_KEY` not found. Please set it in `.env` or Streamlit Secrets.")
         return
 
     # Layout: Dual Column for Inputs
