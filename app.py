@@ -3,38 +3,57 @@ import os
 import fitz
 import chromadb
 from dotenv import load_dotenv
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from sentence_transformers import SentenceTransformer
 
 load_dotenv()
 
-# ── LLM Provider Setup ──────────────────────────────────────────────────────
+# ── Model Definitions ────────────────────────────────────────────────────────
+
+GEMINI_MODELS = {
+    "Gemini 2.5 Flash ⭐ (Recommended)": "gemini-2.5-flash",
+    "Gemini 2.5 Pro (Deep Reasoning)": "gemini-2.5-pro",
+    "Gemini 2.5 Flash-Lite (Budget)": "gemini-2.5-flash-lite",
+}
+
+GROQ_MODELS = {
+    "GPT-OSS 120B ⭐ (Best Quality)": "openai/gpt-oss-120b",
+    "LLaMA 3.3 70B (Versatile)": "llama-3.3-70b-versatile",
+    "GPT-OSS 20B (Ultra-Fast)": "openai/gpt-oss-20b",
+    "LLaMA 3.1 8B (Instant)": "llama-3.1-8b-instant",
+}
 
 PROVIDERS = {
-    "Gemini 1.5 Flash (Google)": {
+    "Google (Gemini)": {
         "env_key": "GEMINI_API_KEY",
-        "description": "🔵 Best for: Reliability, long documents, production use",
+        "models": GEMINI_MODELS,
+        "icon": "🔵",
+        "description": "1M context, reasoning, stable — best with your Pro plan",
     },
-    "LLaMA 3.3 70B (Groq)": {
+    "Groq (Ultra-Fast)": {
         "env_key": "GROQ_API_KEY",
-        "description": "⚡ Best for: Speed — fastest inference available (~500+ tok/s)",
+        "models": GROQ_MODELS,
+        "icon": "⚡",
+        "description": "500-1000 tok/s speed, free tier, 128K context",
     },
 }
 
 
-def call_gemini(prompt):
+# ── LLM Call Functions ───────────────────────────────────────────────────────
+
+def call_gemini(prompt, model_id):
     import google.generativeai as genai
     genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-    model = genai.GenerativeModel("gemini-1.5-flash")
+    model = genai.GenerativeModel(model_id)
     response = model.generate_content(prompt)
     return response.text
 
 
-def call_groq(prompt):
+def call_groq(prompt, model_id):
     from groq import Groq
     client = Groq(api_key=os.getenv("GROQ_API_KEY"))
     response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+        model=model_id,
         messages=[{"role": "user", "content": prompt}],
         temperature=0.3,
         max_tokens=2048,
@@ -43,8 +62,8 @@ def call_groq(prompt):
 
 
 LLM_DISPATCH = {
-    "Gemini 1.5 Flash (Google)": call_gemini,
-    "LLaMA 3.3 70B (Groq)": call_groq,
+    "Google (Gemini)": call_gemini,
+    "Groq (Ultra-Fast)": call_groq,
 }
 
 
@@ -113,10 +132,10 @@ Be precise. Never invent skills not present in the context.
 """
 
 
-def analyze(chunks, job_description, provider):
+def analyze(chunks, job_description, provider, model_id):
     context = "\n\n".join(chunks)
     prompt = build_prompt(context, job_description)
-    return LLM_DISPATCH[provider](prompt)
+    return LLM_DISPATCH[provider](prompt, model_id)
 
 
 # ── Streamlit UI ─────────────────────────────────────────────────────────────
@@ -127,20 +146,34 @@ st.set_page_config(
     layout="wide"
 )
 
-# ── Sidebar: Provider Selection ──────────────────────────────────────────────
+# ── Sidebar: Provider + Model Selection ──────────────────────────────────────
 
 with st.sidebar:
-    st.header("⚙️ LLM Provider")
+    st.header("⚙️ LLM Settings")
+
     provider = st.radio(
-        "Choose your LLM backend:",
+        "Provider:",
         list(PROVIDERS.keys()),
         index=0,
-        help="Switch between providers without redeploying.",
+        help="Switch between Google Gemini and Groq inference.",
     )
-    st.caption(PROVIDERS[provider]["description"])
 
-    # API key status indicator
-    env_key = PROVIDERS[provider]["env_key"]
+    provider_info = PROVIDERS[provider]
+    st.caption(f"{provider_info['icon']} {provider_info['description']}")
+
+    # Model selector for the chosen provider
+    model_options = provider_info["models"]
+    selected_model_label = st.selectbox(
+        "Model:",
+        list(model_options.keys()),
+        index=0,
+        help="Pick a specific model. ⭐ = recommended for this app.",
+    )
+    selected_model_id = model_options[selected_model_label]
+    st.code(selected_model_id, language=None)
+
+    # API key status
+    env_key = provider_info["env_key"]
     key_present = bool(os.getenv(env_key))
     if key_present:
         st.success(f"✅ `{env_key}` detected")
@@ -148,21 +181,20 @@ with st.sidebar:
         st.error(f"❌ `{env_key}` not found — add it to .env or HF Secrets")
 
     st.divider()
-    st.caption("**Provider Comparison**")
+    st.caption("**Quick Comparison**")
     st.markdown("""
-    | | Gemini | Groq |
-    |---|---|---|
-    | Speed | Fast | ⚡ Ultra-fast |
-    | Context | 1M tokens | 128K tokens |
-    | Model | Gemini 1.5 Flash | LLaMA 3.3 70B |
-    | Cost | Pro plan | Free tier |
+| | Gemini 2.5 Flash | GPT-OSS 120B |
+|---|---|---|
+| Speed | ~300 tok/s | ~500 tok/s |
+| Context | 1M tokens | 128K tokens |
+| Quality | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
+| Cost | Pro plan | Free tier |
     """)
 
 # ── Main Content ─────────────────────────────────────────────────────────────
 
 st.title("RAG Resume Analyzer")
-provider_label = "Groq LLaMA 3.3" if "Groq" in provider else "Google Gemini 1.5 Flash"
-st.caption(f"RAG + ChromaDB + sentence-transformers → **{provider_label}**")
+st.caption(f"RAG + ChromaDB + sentence-transformers → **{selected_model_label.split(' (')[0]}** via {provider.split(' (')[0]}")
 
 col1, col2 = st.columns(2)
 
@@ -177,8 +209,8 @@ if st.button("Analyze Resume", type="primary", use_container_width=True):
         st.warning("Both resume and job description are required.")
         st.stop()
 
-    if not os.getenv(PROVIDERS[provider]["env_key"]):
-        st.error(f"Missing API key: `{PROVIDERS[provider]['env_key']}`. Add it to .env or HF Spaces Secrets.")
+    if not os.getenv(provider_info["env_key"]):
+        st.error(f"Missing API key: `{provider_info['env_key']}`. Add it to .env or HF Spaces Secrets.")
         st.stop()
 
     with st.spinner("Step 1 of 4: Extracting text from PDF..."):
@@ -190,11 +222,11 @@ if st.button("Analyze Resume", type="primary", use_container_width=True):
     with st.spinner("Step 3 of 4: Building vector index..."):
         collection = build_index(chunks)
 
-    with st.spinner(f"Step 4 of 4: Analyzing with {provider_label}..."):
+    with st.spinner(f"Step 4 of 4: Analyzing with {selected_model_label.split(' (')[0]}..."):
         relevant = retrieve(collection, job_description)
-        result = analyze(relevant, job_description, provider)
+        result = analyze(relevant, job_description, provider, selected_model_id)
 
-    st.success(f"Analysis complete via **{provider_label}**!")
+    st.success(f"Analysis complete via **{selected_model_label}**!")
     st.markdown("---")
     st.markdown(result)
 
