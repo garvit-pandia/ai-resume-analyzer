@@ -152,10 +152,15 @@ def inject_custom_css():
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400&display=swap');
 
     /* Global Typography & Background */
+    .stApp {
+        background-image: radial-gradient(circle at top center, #ffffff 0%, #F5F4EF 60%) !important;
+        background-attachment: fixed !important;
+    }
+
     html, body, [class*="css"] {
         font-family: 'Inter', sans-serif;
         font-size: 16px;
-        background-color: #F5F4EF !important;
+        background-color: transparent !important;
         color: #4A4541 !important;
         line-height: 1.6;
     }
@@ -183,18 +188,26 @@ def inject_custom_css():
 
     .block-container {
         animation: slideUpFade 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+        background: rgba(255, 255, 255, 0.3);
+        border: 1px solid rgba(222, 220, 215, 0.6);
+        border-radius: 20px;
+        padding: 3rem !important;
+        margin-top: 3rem !important;
+        margin-bottom: 3rem !important;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.02);
     }
 
     /* Extruded Primary Buttons (Neumorphism active state is recessed) */
     .stButton > button[kind="primary"] {
         font-family: 'Inter', sans-serif !important;
-        font-weight: 500 !important;
+        font-weight: 700 !important;
+        font-size: 1.1em !important;
         text-transform: uppercase;
         letter-spacing: 0.5px;
         border-radius: 12px;
         background-color: #F5F4EF !important;
-        border: none !important;
-        color: #B0614C !important;
+        border: 1px solid #E3E1DC !important;
+        color: #8C4735 !important;
         transition: all 0.2s ease-in-out;
         box-shadow: 6px 6px 12px #DEDCD7, -6px -6px 12px #ffffff !important;
     }
@@ -222,9 +235,11 @@ def inject_custom_css():
 
     /* Sidebar base */
     [data-testid="stSidebar"] {
-        background-color: #F5F4EF !important;
-        border-right: none !important;
+        background-color: #F8F7F3 !important;
+        border-right: 1px solid #EAE8DF !important;
         box-shadow: 8px 0px 15px -3px rgba(222, 220, 215, 0.6);
+        min-width: 450px !important;
+        max-width: 450px !important;
     }
     
     /* Expanders (Extruded Container) */
@@ -277,7 +292,7 @@ with st.sidebar:
     provider = st.radio(
         "Provider:",
         list(PROVIDERS.keys()),
-        index=0,
+        index=1,
         help="Switch between Google Gemini and Groq inference.",
     )
 
