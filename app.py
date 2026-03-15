@@ -140,11 +140,122 @@ def analyze(chunks, job_description, provider, model_id):
 
 # ── Streamlit UI ─────────────────────────────────────────────────────────────
 
+def inject_custom_css():
+    st.markdown("""
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&family=Syne:wght@400;600;700;800&display=swap');
+
+    /* Global Typography */
+    html, body, [class*="css"] {
+        font-family: 'DM Sans', sans-serif;
+        font-size: 16px;
+    }
+
+    /* Headings */
+    h1, h2, h3, h4, h5, h6 {
+        font-family: 'Syne', sans-serif !important;
+        font-weight: 700 !important;
+        letter-spacing: -0.02em;
+    }
+
+    h1 {
+        background: linear-gradient(135deg, #c084fc 0%, #3b82f6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: glow 3s ease-in-out infinite alternate;
+        padding-bottom: 5px;
+    }
+
+    /* Custom Animations */
+    @keyframes glow {
+        from { text-shadow: 0 0 10px rgba(139, 92, 246, 0.1); }
+        to { text-shadow: 0 0 20px rgba(139, 92, 246, 0.3), 0 0 25px rgba(59, 130, 246, 0.2); }
+    }
+
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Staggered load for main elements */
+    .block-container {
+        animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Stylish Primary Buttons */
+    .stButton > button[kind="primary"] {
+        font-family: 'Syne', sans-serif !important;
+        font-weight: 600 !important;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        border-radius: 8px;
+        background: linear-gradient(45deg, #8B5CF6, #3B82F6) !important;
+        border: none !important;
+        color: white !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3) !important;
+    }
+    
+    .stButton > button[kind="primary"]:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(139, 92, 246, 0.5) !important;
+        color: white !important;
+        border: none !important;
+    }
+
+    /* Glassmorphism for inputs and text areas */
+    .stTextArea > div > div > textarea, .stFileUploader > div {
+        background: rgba(15, 10, 41, 0.6) !important;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(139, 92, 246, 0.2) !important;
+        border-radius: 12px;
+        transition: border-color 0.3s ease;
+    }
+    
+    .stTextArea > div > div > textarea:focus {
+        border-color: #8B5CF6 !important;
+        box-shadow: 0 0 15px rgba(139, 92, 246, 0.2) !important;
+    }
+
+    /* Sidebar text/styling */
+    [data-testid="stSidebar"] {
+        border-right: 1px solid rgba(139, 92, 246, 0.1);
+    }
+    
+    /* Expanders */
+    .streamlit-expanderHeader {
+        font-family: 'Syne', sans-serif;
+        background: rgba(139, 92, 246, 0.05);
+        border-radius: 8px;
+        border: 1px solid rgba(139, 92, 246, 0.1);
+        font-weight: 600 !important;
+    }
+
+    /* Info boxes */
+    .stAlert {
+        background: rgba(59, 130, 246, 0.05) !important;
+        border: 1px solid rgba(59, 130, 246, 0.2) !important;
+        border-radius: 8px;
+        backdrop-filter: blur(5px);
+        color: #E2D9F3 !important;
+    }
+
+    /* Selectbox styling */
+    .stSelectbox > div > div {
+        background: rgba(15, 10, 41, 0.6);
+        border: 1px solid rgba(139, 92, 246, 0.2);
+    }
+
+    </style>
+    """, unsafe_allow_html=True)
+
 st.set_page_config(
     page_title="RAG Resume Analyzer",
     page_icon="\U0001F4C4",
     layout="wide"
 )
+
+inject_custom_css()
 
 # ── Sidebar: Provider + Model Selection ──────────────────────────────────────
 
