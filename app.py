@@ -189,12 +189,12 @@ def inject_custom_css():
 
     .block-container {
         animation: slideUpFade 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
-        background: rgba(255, 255, 255, 0.3);
+        background: rgba(255, 255, 255, 0.4);
         border: 1px solid rgba(222, 220, 215, 0.6);
         border-radius: 20px;
         padding: 3rem !important;
-        margin-top: 3rem !important;
-        margin-bottom: 3rem !important;
+        margin-top: 3rem;
+        margin-bottom: 3rem;
         box-shadow: 0 10px 30px rgba(0,0,0,0.02);
     }
 
@@ -239,8 +239,12 @@ def inject_custom_css():
         background-color: #F8F7F3 !important;
         border-right: 1px solid #EAE8DF !important;
         box-shadow: 8px 0px 15px -3px rgba(222, 220, 215, 0.6);
-        min-width: 450px !important;
-        max-width: 450px !important;
+    }
+    
+    /* Make table within sidebar readable instead of forcing sidebar width */
+    [data-testid="stSidebar"] table {
+        font-size: 0.9em;
+        width: 100%;
     }
     
     /* Expanders (Extruded Container) */
