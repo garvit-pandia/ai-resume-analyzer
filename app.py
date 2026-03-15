@@ -149,109 +149,117 @@ def analyze(chunks, job_description, provider, model_id):
 def inject_custom_css():
     st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&family=Syne:wght@400;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500&family=Nunito:wght@400;600;700;800&display=swap');
 
-    /* Global Typography */
+    /* Global Typography & Background */
     html, body, [class*="css"] {
         font-family: 'DM Sans', sans-serif;
         font-size: 16px;
+        background-color: #E0E5EC !important;
+        color: #4a5568 !important;
     }
 
     /* Headings */
     h1, h2, h3, h4, h5, h6 {
-        font-family: 'Syne', sans-serif !important;
+        font-family: 'Nunito', sans-serif !important;
         font-weight: 700 !important;
-        letter-spacing: -0.02em;
+        color: #2d3748 !important;
+        letter-spacing: -0.01em;
     }
 
     h1 {
-        background: linear-gradient(135deg, #c084fc 0%, #3b82f6 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        animation: glow 3s ease-in-out infinite alternate;
-        padding-bottom: 5px;
+        padding-bottom: 8px;
+        color: #4a5568;
+        /* Subtle inner bevel text effect */
+        text-shadow: 1px 1px 2px #ffffff, -1px -1px 2px #b8bcc2;
     }
 
-    /* Custom Animations */
-    @keyframes glow {
-        from { text-shadow: 0 0 10px rgba(139, 92, 246, 0.1); }
-        to { text-shadow: 0 0 20px rgba(139, 92, 246, 0.3), 0 0 25px rgba(59, 130, 246, 0.2); }
-    }
-
-    @keyframes slideUp {
-        from { opacity: 0; transform: translateY(20px); }
+    /* App entry animation */
+    @keyframes slideUpFade {
+        from { opacity: 0; transform: translateY(15px); }
         to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Staggered load for main elements */
     .block-container {
-        animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        animation: slideUpFade 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
     }
 
-    /* Stylish Primary Buttons */
+    /* Extruded Primary Buttons (Neumorphism active state is recessed) */
     .stButton > button[kind="primary"] {
-        font-family: 'Syne', sans-serif !important;
-        font-weight: 600 !important;
+        font-family: 'Nunito', sans-serif !important;
+        font-weight: 700 !important;
         text-transform: uppercase;
         letter-spacing: 1px;
-        border-radius: 8px;
-        background: linear-gradient(45deg, #8B5CF6, #3B82F6) !important;
+        border-radius: 16px;
+        background-color: #E0E5EC !important;
         border: none !important;
-        color: white !important;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3) !important;
+        color: #667eea !important;
+        transition: all 0.2s ease-in-out;
+        box-shadow: 6px 6px 12px #b8bcc2, -6px -6px 12px #ffffff !important;
     }
     
-    .stButton > button[kind="primary"]:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(139, 92, 246, 0.5) !important;
-        color: white !important;
-        border: none !important;
+    .stButton > button[kind="primary"]:hover, .stButton > button[kind="primary"]:active {
+        box-shadow: inset 4px 4px 8px #b8bcc2, inset -4px -4px 8px #ffffff !important;
+        color: #5a67d8 !important;
     }
 
-    /* Glassmorphism for inputs and text areas */
+    /* Recessed Inputs (Inset Shadow) */
     .stTextArea > div > div > textarea, .stFileUploader > div {
-        background: rgba(15, 10, 41, 0.6) !important;
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(139, 92, 246, 0.2) !important;
-        border-radius: 12px;
-        transition: border-color 0.3s ease;
+        background-color: #E0E5EC !important;
+        border: none !important;
+        border-radius: 16px;
+        color: #2d3748 !important;
+        box-shadow: inset 5px 5px 10px #b8bcc2, inset -5px -5px 10px #ffffff !important;
+        transition: all 0.3s ease;
     }
     
     .stTextArea > div > div > textarea:focus {
-        border-color: #8B5CF6 !important;
-        box-shadow: 0 0 15px rgba(139, 92, 246, 0.2) !important;
+        box-shadow: inset 3px 3px 6px #a1a6ac, inset -3px -3px 6px #ffffff !important;
+        outline: none !important;
     }
 
-    /* Sidebar text/styling */
+    /* Sidebar base */
     [data-testid="stSidebar"] {
-        border-right: 1px solid rgba(139, 92, 246, 0.1);
+        background-color: #E0E5EC !important;
+        border-right: none !important;
+        box-shadow: 8px 0px 15px -3px rgba(163,177,198, 0.4);
     }
     
-    /* Expanders */
+    /* Expanders (Extruded Container) */
     .streamlit-expanderHeader {
-        font-family: 'Syne', sans-serif;
-        background: rgba(139, 92, 246, 0.05);
-        border-radius: 8px;
-        border: 1px solid rgba(139, 92, 246, 0.1);
+        font-family: 'Nunito', sans-serif;
+        background-color: #E0E5EC !important;
+        border-radius: 12px;
+        border: none !important;
         font-weight: 600 !important;
+        color: #4a5568 !important;
+        box-shadow: 4px 4px 8px #b8bcc2, -4px -4px 8px #ffffff !important;
+        margin-bottom: 8px;
     }
 
-    /* Info boxes */
+    /* Info boxes (slightly depressed) */
     .stAlert {
-        background: rgba(59, 130, 246, 0.05) !important;
-        border: 1px solid rgba(59, 130, 246, 0.2) !important;
-        border-radius: 8px;
-        backdrop-filter: blur(5px);
-        color: #E2D9F3 !important;
+        background-color: #E0E5EC !important;
+        border: none !important;
+        border-radius: 12px;
+        box-shadow: inset 3px 3px 6px #c5cbd1, inset -3px -3px 6px #ffffff !important;
+        color: #4a5568 !important;
     }
 
-    /* Selectbox styling */
+    /* Selectbox styling (Recessed) */
     .stSelectbox > div > div {
-        background: rgba(15, 10, 41, 0.6);
-        border: 1px solid rgba(139, 92, 246, 0.2);
+        background-color: #E0E5EC !important;
+        border: none !important;
+        border-radius: 10px;
+        box-shadow: inset 3px 3px 6px #b8bcc2, inset -3px -3px 6px #ffffff !important;
+        color: #2d3748 !important;
     }
 
+    /* Dividers (Ridge effect) */
+    hr {
+        border-top: 1px solid #ffffff !important;
+        border-bottom: 1px solid #b8bcc2 !important;
+    }
     </style>
     """, unsafe_allow_html=True)
 
