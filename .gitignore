@@ -1,6 +1,21 @@
+# Local environment
 .env
 venv/
+node_modules/
 __pycache__/
 *.pyc
 .DS_Store
+
+# Persistent Storage (Local Vector DB)
 chroma_db/
+.chroma/
+
+# AI Agent Context & Workflow (Development metadata)
+AGENTS.md
+SKILL_frontend-design.md
+tasks/
+.gemini/
+
+# IDE Config
+.vscode/
+.idea/
