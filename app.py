@@ -149,29 +149,30 @@ def analyze(chunks, job_description, provider, model_id):
 def inject_custom_css():
     st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500&family=Nunito:wght@400;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400&display=swap');
 
     /* Global Typography & Background */
     html, body, [class*="css"] {
-        font-family: 'DM Sans', sans-serif;
+        font-family: 'Inter', sans-serif;
         font-size: 16px;
-        background-color: #E0E5EC !important;
-        color: #4a5568 !important;
+        background-color: #F5F4EF !important;
+        color: #4A4541 !important;
+        line-height: 1.6;
     }
 
-    /* Headings */
+    /* Headings (Anthropic Style Serif) */
     h1, h2, h3, h4, h5, h6 {
-        font-family: 'Nunito', sans-serif !important;
-        font-weight: 700 !important;
-        color: #2d3748 !important;
-        letter-spacing: -0.01em;
+        font-family: 'Newsreader', serif !important;
+        font-weight: 600 !important;
+        color: #2A2724 !important;
+        letter-spacing: -0.02em;
     }
 
     h1 {
         padding-bottom: 8px;
-        color: #4a5568;
+        color: #2A2724;
         /* Subtle inner bevel text effect */
-        text-shadow: 1px 1px 2px #ffffff, -1px -1px 2px #b8bcc2;
+        text-shadow: 1px 1px 2px #ffffff, -1px -1px 2px #DEDCD7;
     }
 
     /* App entry animation */
@@ -186,79 +187,81 @@ def inject_custom_css():
 
     /* Extruded Primary Buttons (Neumorphism active state is recessed) */
     .stButton > button[kind="primary"] {
-        font-family: 'Nunito', sans-serif !important;
-        font-weight: 700 !important;
+        font-family: 'Inter', sans-serif !important;
+        font-weight: 500 !important;
         text-transform: uppercase;
-        letter-spacing: 1px;
-        border-radius: 16px;
-        background-color: #E0E5EC !important;
+        letter-spacing: 0.5px;
+        border-radius: 12px;
+        background-color: #F5F4EF !important;
         border: none !important;
-        color: #667eea !important;
+        color: #B0614C !important;
         transition: all 0.2s ease-in-out;
-        box-shadow: 6px 6px 12px #b8bcc2, -6px -6px 12px #ffffff !important;
+        box-shadow: 6px 6px 12px #DEDCD7, -6px -6px 12px #ffffff !important;
     }
     
     .stButton > button[kind="primary"]:hover, .stButton > button[kind="primary"]:active {
-        box-shadow: inset 4px 4px 8px #b8bcc2, inset -4px -4px 8px #ffffff !important;
-        color: #5a67d8 !important;
+        box-shadow: inset 4px 4px 8px #DEDCD7, inset -4px -4px 8px #ffffff !important;
+        color: #8C4735 !important;
     }
 
     /* Recessed Inputs (Inset Shadow) */
     .stTextArea > div > div > textarea, .stFileUploader > div {
-        background-color: #E0E5EC !important;
+        background-color: #F5F4EF !important;
         border: none !important;
-        border-radius: 16px;
-        color: #2d3748 !important;
-        box-shadow: inset 5px 5px 10px #b8bcc2, inset -5px -5px 10px #ffffff !important;
+        border-radius: 12px;
+        color: #2A2724 !important;
+        box-shadow: inset 4px 4px 8px #DEDCD7, inset -4px -4px 8px #ffffff !important;
         transition: all 0.3s ease;
+        padding: 12px !important;
     }
     
     .stTextArea > div > div > textarea:focus {
-        box-shadow: inset 3px 3px 6px #a1a6ac, inset -3px -3px 6px #ffffff !important;
+        box-shadow: inset 2px 2px 4px #C7C4BE, inset -2px -2px 4px #ffffff !important;
         outline: none !important;
     }
 
     /* Sidebar base */
     [data-testid="stSidebar"] {
-        background-color: #E0E5EC !important;
+        background-color: #F5F4EF !important;
         border-right: none !important;
-        box-shadow: 8px 0px 15px -3px rgba(163,177,198, 0.4);
+        box-shadow: 8px 0px 15px -3px rgba(222, 220, 215, 0.6);
     }
     
     /* Expanders (Extruded Container) */
     .streamlit-expanderHeader {
-        font-family: 'Nunito', sans-serif;
-        background-color: #E0E5EC !important;
+        font-family: 'Inter', sans-serif;
+        background-color: #F5F4EF !important;
         border-radius: 12px;
         border: none !important;
-        font-weight: 600 !important;
-        color: #4a5568 !important;
-        box-shadow: 4px 4px 8px #b8bcc2, -4px -4px 8px #ffffff !important;
+        font-weight: 500 !important;
+        color: #4A4541 !important;
+        box-shadow: 4px 4px 8px #DEDCD7, -4px -4px 8px #ffffff !important;
         margin-bottom: 8px;
     }
 
     /* Info boxes (slightly depressed) */
     .stAlert {
-        background-color: #E0E5EC !important;
+        background-color: #F5F4EF !important;
         border: none !important;
         border-radius: 12px;
-        box-shadow: inset 3px 3px 6px #c5cbd1, inset -3px -3px 6px #ffffff !important;
-        color: #4a5568 !important;
+        box-shadow: inset 3px 3px 6px #E3E1DC, inset -3px -3px 6px #ffffff !important;
+        color: #4A4541 !important;
     }
 
     /* Selectbox styling (Recessed) */
     .stSelectbox > div > div {
-        background-color: #E0E5EC !important;
+        background-color: #F5F4EF !important;
         border: none !important;
         border-radius: 10px;
-        box-shadow: inset 3px 3px 6px #b8bcc2, inset -3px -3px 6px #ffffff !important;
-        color: #2d3748 !important;
+        box-shadow: inset 3px 3px 6px #DEDCD7, inset -3px -3px 6px #ffffff !important;
+        color: #2A2724 !important;
     }
 
     /* Dividers (Ridge effect) */
     hr {
         border-top: 1px solid #ffffff !important;
-        border-bottom: 1px solid #b8bcc2 !important;
+        border-bottom: 1px solid #DEDCD7 !important;
+        margin: 2em 0 !important;
     }
     </style>
     """, unsafe_allow_html=True)
