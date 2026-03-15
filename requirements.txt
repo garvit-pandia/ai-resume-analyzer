@@ -1,5 +1,6 @@
 streamlit
 google-generativeai
+groq
 pymupdf
 langchain
 langchain-community
