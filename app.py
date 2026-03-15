@@ -8,6 +8,12 @@ from sentence_transformers import SentenceTransformer
 
 load_dotenv()
 
+st.set_page_config(
+    page_title="RAG Resume Analyzer",
+    page_icon="\U0001F4C4",
+    layout="wide"
+)
+
 # ── Model Definitions ────────────────────────────────────────────────────────
 
 GEMINI_MODELS = {
@@ -249,11 +255,6 @@ def inject_custom_css():
     </style>
     """, unsafe_allow_html=True)
 
-st.set_page_config(
-    page_title="RAG Resume Analyzer",
-    page_icon="\U0001F4C4",
-    layout="wide"
-)
 
 inject_custom_css()
 
