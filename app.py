@@ -11,7 +11,8 @@ load_dotenv()
 st.set_page_config(
     page_title="RAG Resume Analyzer",
     page_icon="\U0001F4C4",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="collapsed"
 )
 
 # ── Model Definitions ────────────────────────────────────────────────────────
